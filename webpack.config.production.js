@@ -1,15 +1,22 @@
 /* eslint-disable no-var */
 var path = require('path');
 var webpack = require('webpack');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+var nodeModulePath = path.resolve(__dirname, 'node_modules');
+var distPath = path.resolve(__dirname, 'dist');
+var srcPath = path.resolve(__dirname, 'src');
+var mainPath = path.resolve(__dirname, 'src', 'app.js');
+var stylesheetPath = path.resolve(__dirname, 'src', 'app.less');
 
 module.exports = {
 	devtool: 'source-map',
 	entry: [
-		'./scripts/index',
-		'./styles/stylesheets.less'
+		mainPath,
+    stylesheetPath
 	],
 	output: {
-		path: path.join(__dirname, 'dist'),
+		path: distPath,
 		filename: 'bundle.js',
 		publicPath: '/'
 	},
@@ -18,6 +25,9 @@ module.exports = {
 	},
 	plugins: [
 		new webpack.optimize.OccurenceOrderPlugin(),
+    new ExtractTextPlugin('style.css', {
+        allChunks: true
+    }),
 		new webpack.DefinePlugin({
 			'process.env': {
 				'NODE_ENV': JSON.stringify('production')
@@ -33,12 +43,16 @@ module.exports = {
 		loaders: [{
 			test: /\.jsx?$/,
 			loaders: ['babel'],
-			include: path.join(__dirname, 'scripts')
+			include: srcPath
 		},
-		{
-			test: /\.less$/,
-			loader: 'style!css!autoprefixer!less'
-		},
+    {
+      test: /\.css$/,
+      loader: ExtractTextPlugin.extract("style-loader", "css-loader!autoprefixer-loader")
+    },
+    {
+      test: /\.less$/,
+      loader: ExtractTextPlugin.extract("style-loader", "css-loader!autoprefixer-loader!less-loader")
+    },
 		{
     	test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
     	loader: 'url?limit=10000&mimetype=application/font-woff'

@@ -1,23 +1,33 @@
 /* eslint-disable no-var */
 var path = require('path');
 var webpack = require('webpack');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+var nodeModulePath = path.resolve(__dirname, 'node_modules');
+var buildPath = path.resolve(__dirname, 'public', 'build');
+var srcPath = path.resolve(__dirname, 'src');
+var mainPath = path.resolve(__dirname, 'src', 'app.js');
+var stylesheetPath = path.resolve(__dirname, 'src', 'app.less');
 
 module.exports = {
 	entry: [
-		'webpack-dev-server/client?http://localhost:3000',
-		'webpack/hot/only-dev-server',
-		'./scripts/index.js',
-		'./styles/stylesheets.less'
+    'webpack/hot/dev-server',
+    'webpack-dev-server/client?http://localhost:8080',
+    mainPath,
+    stylesheetPath
 	],
 	devtool: 'eval-source-map',
 	output: {
-		path: __dirname,
+		path: buildPath,
 		filename: 'bundle.js',
-		publicPath: '/public/'
+		publicPath: '/build/'
 	},
 	plugins: [
 		new webpack.HotModuleReplacementPlugin(),
-		new webpack.NoErrorsPlugin()
+		new webpack.NoErrorsPlugin(),
+    new ExtractTextPlugin('style.css', {
+        allChunks: true
+    })
 	],
 	resolve: {
 		extensions: ['', '.js']
@@ -26,11 +36,15 @@ module.exports = {
 		loaders: [{
 			test: /\.jsx?$/,
 			loaders: ['react-hot', 'babel'],
-			include: path.join(__dirname, 'scripts')
+			include: srcPath
 		},
+    {
+      test: /\.css$/,
+      loader: ExtractTextPlugin.extract("style-loader", "css-loader!autoprefixer-loader")
+    },
 		{
 			test: /\.less$/,
-			loader: 'style!css!autoprefixer!less'
+			loader: ExtractTextPlugin.extract("style-loader", "css-loader!autoprefixer-loader!less-loader")
 		},
 		{
     	test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
